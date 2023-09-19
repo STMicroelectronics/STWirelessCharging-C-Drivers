@@ -68,6 +68,18 @@ The code documentation can be generated using the Doxygen tool.
 ```
 
 ------
+
+## FAQ
+
+1. There is an I2C transaction NACK error that happened when writing system reset command to STWLC38.
+
+    This is a known issue and its limitation of STWLC38. 
+    Host shall ignore this error and proceed with the following I2C transactions. Users may implement conditional error handling. 
+
+    For STM32 users, please see Appendix Example I2C Error Handling using STM32 as references.
+
+
+------
 ## Appendix
 
 ### Example Code using STM32 MCU
