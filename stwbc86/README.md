@@ -10,8 +10,8 @@ This driver requires the STWBC86 wireless charger chip. This is present on the `
 ## Description
 
 This driver provides API to update STWBC86 firmware and configurations. The driver is written in C programming language and developed based way below:
-1.	Platform independent driver which users could easily integrate the driver without any modification needed.
-1.	Written in a way of clear and self-explainable sequences, as references to user if need to re-write the sequences in different code formatting.
+1.    Platform independent driver which users could easily integrate the driver without any modification needed.
+1.    Written in a way of clear and self-explainable sequences, as references to user if need to re-write the sequences in different code formatting.
 
 The code documentation can be generated using the Doxygen tool.
 
@@ -41,8 +41,8 @@ The code documentation can be generated using the Doxygen tool.
 - To use this driver, users need to declare and assign the platform functions to mandatory interfaces.
 
 ```
-    /** stwlcxx is the used part number **/
-    struct stwlcxx_dev stwbc86 = { 0 };
+    /** stwbc86 is the used part number **/
+    struct stwbc86_dev stwbc86 = { 0 };
 
     stwbc86.bus_write = platform_write;
     stwbc86.bus_write_read = platform_write_read;
@@ -54,9 +54,14 @@ The code documentation can be generated using the Doxygen tool.
 - If user data is needed by the platform functions, initialize the phandle parameter.
 
 ```
+    struct stmdev_platform {
+        I2C_HandleTypeDef *hi2c;
+        UART_HandleTypeDef *huart;
+    };
+
     struct stmdev_platform platform = {
-            .hi2c = &hi2c1,
-            .huart = &huart3,
+        .hi2c = &hi2c1,
+        .huart = &huart3,
     };
     stwbc86.phandle = &platform;
 ```
@@ -77,8 +82,6 @@ The code documentation can be generated using the Doxygen tool.
     This is a known issue and its limitation of STWBC86. 
     Host shall ignore this error and proceed with the following I2C transactions. Users may implement conditional error handling. 
 
-    For STM32 users, please see Appendix Example I2C Error Handling using STM32 as references.
-
 
 ------
 
@@ -94,71 +97,87 @@ static uint8_t i2cSequentialTxDone = 0;
 
 void HAL_I2C_MasterTxCpltCallback(I2C_HandleTypeDef *hi2c)
 {
-	i2cSequentialTxDone = 1;
+    i2cSequentialTxDone = 1;
 }
 
 void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *hi2c)
 {
-	i2cSequentialRxDone = 1;
+    i2cSequentialRxDone = 1;
 }
 
 int32_t platform_write(void *phandle, uint8_t *wbuf, int32_t wlen)
 {
-	struct stmdev_platform *platform = (struct stmdev_platform *)phandle;
-	HAL_StatusTypeDef status = HAL_OK;
-	uint32_t startTick;
+    struct stmdev_platform *platform = (struct stmdev_platform *)phandle;
+    HAL_StatusTypeDef status = HAL_OK;
+    uint32_t startTick;
 
-	i2cSequentialTxDone = 0;
-	startTick = HAL_GetTick();
+    i2cSequentialTxDone = 0;
+    startTick = HAL_GetTick();
 
-	status = HAL_I2C_Master_Seq_Transmit_IT(platform->hi2c, STWBC86_I2C_ADDR << 1, wbuf, wlen, I2C_FIRST_AND_LAST_FRAME);
-	if(status != HAL_OK)
-		return status;
+    status = HAL_I2C_Master_Seq_Transmit_IT(platform->hi2c, STWBC86_I2C_ADDR << 1, wbuf, wlen, I2C_FIRST_AND_LAST_FRAME);
+    if(status != HAL_OK)
+        return status;
 
-	while(i2cSequentialTxDone == 0)
-	{
-		if((HAL_GetTick() - startTick) > IO_DELAY_MS)
-		{
-			return HAL_TIMEOUT;
-		}
-	}
+    while(i2cSequentialTxDone == 0)
+    {
+        if((HAL_GetTick() - startTick) > 1000)
+        {
+            /* I2C NACK WORKAROUND */
+            /* Process Unlocked */
+            __HAL_LOCK(platform->hi2c);
 
-	return 0;
+            /* Clear STOP Flag */
+            __HAL_I2C_CLEAR_FLAG(platform->hi2c, I2C_FLAG_STOPF);
+
+            /* Clear Configuration Register 2 */
+            I2C_RESET_CR2(platform->hi2c);
+
+            platform->hi2c->State = HAL_I2C_STATE_READY;
+            platform->hi2c->Mode  = HAL_I2C_MODE_NONE;
+
+            /* Process Unlocked */
+            __HAL_UNLOCK(platform->hi2c);
+
+            return 0;
+        }
+    }
+
+    return 0;
 }
 
 int32_t platform_write_read(void *phandle, uint8_t *wbuf, int32_t wlen, uint8_t *rbuf, int32_t rlen)
 {
-	struct stmdev_platform *platform = (struct stmdev_platform *)phandle;
-	HAL_StatusTypeDef status = HAL_OK;
-	uint32_t startTick;
+    struct stmdev_platform *platform = (struct stmdev_platform *)phandle;
+    HAL_StatusTypeDef status = HAL_OK;
+    uint32_t startTick;
 
-	i2cSequentialTxDone = 0;
-	i2cSequentialRxDone = 0;
-	startTick = HAL_GetTick();
+    i2cSequentialTxDone = 0;
+    i2cSequentialRxDone = 0;
+    startTick = HAL_GetTick();
 
-	status = HAL_I2C_Master_Seq_Transmit_IT(platform->hi2c, STWBC86_I2C_ADDR << 1, wbuf, wlen, I2C_FIRST_FRAME);
-	if(status != HAL_OK)
-		return status;
+    status = HAL_I2C_Master_Seq_Transmit_IT(platform->hi2c, STWBC86_I2C_ADDR << 1, wbuf, wlen, I2C_FIRST_FRAME);
+    if(status != HAL_OK)
+        return status;
 
-	while(i2cSequentialTxDone == 0)
-	{
-		if((HAL_GetTick() - startTick) > IO_DELAY_MS)
-		{
-			return HAL_TIMEOUT;
-		}
-	}
+    while(i2cSequentialTxDone == 0)
+    {
+        if((HAL_GetTick() - startTick) > 1000)
+        {
+            return HAL_TIMEOUT;
+        }
+    }
 
-	status = HAL_I2C_Master_Seq_Receive_IT(platform->hi2c, STWBC86_I2C_ADDR << 1, rbuf, rlen, I2C_LAST_FRAME);
-	if(status != HAL_OK)
-		return status;
+    status = HAL_I2C_Master_Seq_Receive_IT(platform->hi2c, STWBC86_I2C_ADDR << 1, rbuf, rlen, I2C_LAST_FRAME);
+    if(status != HAL_OK)
+        return status;
 
-	while(i2cSequentialRxDone == 0)
-	{
-		if((HAL_GetTick() - startTick) > IO_DELAY_MS)
-			return HAL_TIMEOUT;
-	}
+    while(i2cSequentialRxDone == 0)
+    {
+        if((HAL_GetTick() - startTick) > 1000)
+            return HAL_TIMEOUT;
+    }
 
-	return 0;
+    return 0;
 }
 
 void platform_delay(uint32_t millisec)
@@ -177,25 +196,7 @@ void platform_free_mem(void *ptr)
 }
 
 ```
-### Example I2C Error Handling using STM32 MCU
-#### stm32xxxx_it.c
-```
-/**
-  * @brief This function handles I2C1 Error interrupt.
-  */
-void I2C1_ER_IRQHandler(void)
-{
-  /* USER CODE BEGIN I2C1_ER_IRQn 0 */
-  /* Comment out the HAL_I2C_ER_IRQHandler() as I2C NACK workaround
-   * during reset STWBC86 */
 
-  /* USER CODE END I2C1_ER_IRQn 0 */
-  //HAL_I2C_ER_IRQHandler(&hi2c1);
-  /* USER CODE BEGIN I2C1_ER_IRQn 1 */
-
-  /* USER CODE END I2C1_ER_IRQn 1 */
-}
-```
 ------
 
 **More Information: [ST wireless charger ICs](https://www.st.com/en/power-management/wireless-charger-ics)**
