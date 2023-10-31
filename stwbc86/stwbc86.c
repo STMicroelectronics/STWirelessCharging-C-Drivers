@@ -504,7 +504,7 @@ int32_t stwbc86_get_chip_info(struct stwbc86_dev *dev, struct stwbc86_chip_info 
     ret |= stwbc86_read_single_hwreg(dev, STWBC86_HWREG_CUT_ID_REG, &cut_id);
     if (ret)
     {
-        stwbc86_log(dev, LOG_ERR, "failed to read chip information. ERROR 0x%08X\r\n", ret);
+        stwbc86_log(dev, LOG_ERR, "failed to read chip information. ERROR: 0x%08X\r\n", ret);
         return ret;
     }
 
@@ -769,7 +769,7 @@ static int32_t stwbc86_nvm_write(struct stwbc86_dev *dev, enum stwbc86_fw_type f
     if (!(reg == OP_MODE_SA || reg == OP_MODE_TX))
     {
         ret = STWBC86_ERR_INVALID_OP_MODE;
-        stwbc86_log(dev, LOG_ERR, "no DC power detected, nvm programming aborted. ERROR 0x%08X\r\n", ret);
+        stwbc86_log(dev, LOG_ERR, "no DC power detected, nvm programming aborted. ERROR: 0x%08X\r\n", ret);
         return ret;
     }
 
@@ -791,7 +791,7 @@ static int32_t stwbc86_nvm_write(struct stwbc86_dev *dev, enum stwbc86_fw_type f
     if (reg != OP_MODE_SA)
     {
         ret = STWBC86_ERR_INVALID_OP_MODE;
-        stwbc86_log(dev, LOG_ERR, "no DC power detected, nvm programming aborted. ERROR 0x%08X\r\n", ret);
+        stwbc86_log(dev, LOG_ERR, "no DC power detected, nvm programming aborted. ERROR: 0x%08X\r\n", ret);
         return ret;
     }
 
@@ -812,7 +812,7 @@ static int32_t stwbc86_nvm_write(struct stwbc86_dev *dev, enum stwbc86_fw_type f
         ret = stwbc86_nvm_erase_bulk(dev, STWBC86_NVM_PATCH_TOTAL_SECTOR, STWBC86_NVM_PATCH_START_SECTOR_INDEX);
         if (ret)
         {
-            stwbc86_log(dev, LOG_ERR, "failed to erase cfg in NVM. ERROR 0x%08X\r\n", ret);
+            stwbc86_log(dev, LOG_ERR, "failed to erase cfg in NVM. ERROR: 0x%08X\r\n", ret);
             return ret;
         }
         break;
@@ -821,7 +821,7 @@ static int32_t stwbc86_nvm_write(struct stwbc86_dev *dev, enum stwbc86_fw_type f
         ret = stwbc86_nvm_erase_bulk(dev, STWBC86_NVM_CFG_TOTAL_SECTOR, STWBC86_NVM_CFG_START_SECTOR_INDEX);
         if (ret)
         {
-            stwbc86_log(dev, LOG_ERR, "failed to erase cfg in NVM. ERROR 0x%08X\r\n", ret);
+            stwbc86_log(dev, LOG_ERR, "failed to erase cfg in NVM. ERROR: 0x%08X\r\n", ret);
             return ret;
         }
         break;
@@ -830,7 +830,7 @@ static int32_t stwbc86_nvm_write(struct stwbc86_dev *dev, enum stwbc86_fw_type f
         ret = stwbc86_nvm_full_erase(dev);
         if (ret)
         {
-            stwbc86_log(dev, LOG_ERR, "failed to full erase NVM. ERROR 0x%08X\r\n", ret);
+            stwbc86_log(dev, LOG_ERR, "failed to full erase NVM. ERROR: 0x%08X\r\n", ret);
             return ret;
         }
         break;
@@ -845,7 +845,7 @@ static int32_t stwbc86_nvm_write(struct stwbc86_dev *dev, enum stwbc86_fw_type f
         ret = stwbc86_nvm_write_bulk(dev, patch, patch_size, STWBC86_NVM_PATCH_START_SECTOR_INDEX);
         if (ret)
         {
-            stwbc86_log(dev, LOG_ERR, "failed to write patch into NVM. ERROR 0x%08X\r\n", ret);
+            stwbc86_log(dev, LOG_ERR, "failed to write patch into NVM. ERROR: 0x%08X\r\n", ret);
             return ret;
         }
     }
@@ -856,7 +856,7 @@ static int32_t stwbc86_nvm_write(struct stwbc86_dev *dev, enum stwbc86_fw_type f
         ret = stwbc86_nvm_write_bulk(dev, cfg, cfg_size, STWBC86_NVM_CFG_START_SECTOR_INDEX);
         if (ret)
         {
-            stwbc86_log(dev, LOG_ERR, "failed to write cfg into NVM. ERROR 0x%08X\r\n", ret);
+            stwbc86_log(dev, LOG_ERR, "failed to write cfg into NVM. ERROR: 0x%08X\r\n", ret);
             return ret;
         }
     }
@@ -947,7 +947,7 @@ static int32_t stwbc86_nvm_validate(struct stwbc86_dev *dev, enum stwbc86_fw_typ
         if (memcmp(patch_now, patch, patch_size) != 0)
         {
             ret = STWBC86_ERR_NVM_DATA_CORRUPTED;
-            stwbc86_log(dev, LOG_ERR, "patch data compare failed in ERVrf mode. ERROR 0x%08X\r\n", ret);
+            stwbc86_log(dev, LOG_ERR, "patch data compare failed in ERVrf mode. ERROR: 0x%08X\r\n", ret);
             goto exit_free_mem;
         }
     }
@@ -959,7 +959,7 @@ static int32_t stwbc86_nvm_validate(struct stwbc86_dev *dev, enum stwbc86_fw_typ
         if (memcmp(cfg_now, cfg, cfg_size) != 0)
         {
             ret = STWBC86_ERR_NVM_DATA_CORRUPTED;
-            stwbc86_log(dev, LOG_ERR, "cfg data compare failed in ERVrf mode. ERROR 0x%08X\r\n", ret);
+            stwbc86_log(dev, LOG_ERR, "cfg data compare failed in ERVrf mode. ERROR: 0x%08X\r\n", ret);
             goto exit_free_mem;
         }
     }
@@ -977,7 +977,7 @@ static int32_t stwbc86_nvm_validate(struct stwbc86_dev *dev, enum stwbc86_fw_typ
         if (memcmp(patch_now, patch, patch_size) != 0)
         {
             ret = STWBC86_ERR_NVM_DATA_CORRUPTED;
-            stwbc86_log(dev, LOG_ERR, "patch data compare failed in PRVrf mode. ERROR 0x%08X\r\n", ret);
+            stwbc86_log(dev, LOG_ERR, "patch data compare failed in PRVrf mode. ERROR: 0x%08X\r\n", ret);
             goto exit_free_mem;
         }
     }
@@ -989,7 +989,7 @@ static int32_t stwbc86_nvm_validate(struct stwbc86_dev *dev, enum stwbc86_fw_typ
         if (memcmp(cfg_now, cfg, cfg_size) != 0)
         {
             ret = STWBC86_ERR_NVM_DATA_CORRUPTED;
-            stwbc86_log(dev, LOG_ERR, "cfg data compare failed in PRVrf mode. ERROR 0x%08X\r\n", ret);
+            stwbc86_log(dev, LOG_ERR, "cfg data compare failed in PRVrf mode. ERROR: 0x%08X\r\n", ret);
             goto exit_free_mem;
         }
     }
@@ -1031,7 +1031,7 @@ int32_t stwbc86_fw_update(struct stwbc86_dev *dev, enum stwbc86_fw_type fw_type,
 
     if (chip.chip_id != NVM_TARGET_CHIP_ID)
     {
-        stwbc86_log(dev, LOG_ERR, "invalid chip_id. running|header: [%d|%d]. ERROR 0x%08X\r\n", chip.chip_id, NVM_TARGET_CHIP_ID, ret);
+        stwbc86_log(dev, LOG_ERR, "invalid chip_id. running|header: [%d|%d]. ERROR: 0x%08X\r\n", chip.chip_id, NVM_TARGET_CHIP_ID, ret);
         return STWBC86_ERR_INVALID_CHIP_ID;
     }
 
@@ -1124,7 +1124,7 @@ int32_t stwbc86_fw_update(struct stwbc86_dev *dev, enum stwbc86_fw_type fw_type,
     return 0;
 
 exit_system_reset:
-    stwbc86_log(dev, LOG_ERR, "NVM programming failed. ERROR 0x%08X\r\n", ret);
+    stwbc86_log(dev, LOG_ERR, "NVM programming failed. ERROR: 0x%08X\r\n", ret);
     stwbc86_system_reset(dev);
     return ret;
 }

@@ -191,7 +191,7 @@ The code documentation can be generated using the Doxygen tool.
 /* Private define ------------------------------------------------------------*/
 #define USE_STATIC_ALLOC_RW 0
 #if USE_STATIC_ALLOC_RW
-static uint8_t stwlc_alloc_buf[261] = { 0x00 };
+static uint8_t stwlc_alloc_buf[258] = { 0x00 };
 #endif
 
 struct stmdev_platform {
