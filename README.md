@@ -3,7 +3,7 @@
 
 ## Introduction
 
-This repository contains low-level [platform-independent drivers](https://TODO:DataBriefAddLater) for STMicroelectronics Wireless Charging IC. The drivers are written in C programming language.
+This repository contains low-level platform-independent drivers for STMicroelectronics Wireless Charging IC. The drivers are written in C programming language.
 
 
 ## Repository structure
